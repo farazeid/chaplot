@@ -1,0 +1,5 @@
+vizdoom
+torch
+torchvision
+torchaudio
+opencv-python
