@@ -72,12 +72,12 @@ def train(rank, args, shared_model):
             value, logit, (hx, cx) = model((Variable(image.unsqueeze(0)),
                                             Variable(instruction_idx),
                                             (tx, hx, cx)))
-            prob = F.softmax(logit)
-            log_prob = F.log_softmax(logit)
+            prob = F.softmax(logit, dim=1)
+            log_prob = F.log_softmax(logit, dim=1)
             entropy = -(log_prob * prob).sum(1)
             entropies.append(entropy)
 
-            action = prob.multinomial().data
+            action = prob.multinomial(num_samples=1).data
             log_prob = log_prob.gather(1, Variable(action))
 
             action = action.numpy()[0, 0]
@@ -150,7 +150,7 @@ def train(rank, args, shared_model):
             v_losses = []
 
         (policy_loss + 0.5 * value_loss).backward()
-        torch.nn.utils.clip_grad_norm(model.parameters(), 40)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 40)
 
         ensure_shared_grads(model, shared_model)
         optimizer.step()
